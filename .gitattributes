@@ -1,0 +1,5 @@
+# The training frontend fingerprints the Python source bytes.
+*.py text eol=lf
+*.ipynb text eol=lf
+*.wav binary
+*.png binary

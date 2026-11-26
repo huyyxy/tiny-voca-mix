@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vivian · tiny-voca 中英语音合成</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171512'/%3E%3Cpath d='M8 13v6M12 9v14M16 12v8M20 7v18M24 13v6' stroke='%23f4efe6' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper: #f6f2ea; --ink: #1b1915; --muted: #6d665b; --line: #d9d2c4; --panel: #fffdf8;
+    --accent: #b4421f; --accent-ink: #fff; --ok: #2f6b3c;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #151412; --ink: #ece6da; --muted: #9a9284; --line: #35312a; --panel: #1d1b18; --accent: #e0703f; --accent-ink: #151412; --ok: #7fbf8c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 var(--ui); }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 20px 72px; }
+  header h1 { font: 600 44px/1.05 var(--sans); letter-spacing: -0.01em; margin: 0 0 14px; }
+  header p { margin: 0; color: var(--muted); max-width: 56ch; }
+  header p strong { color: var(--ink); font-weight: 600; }
+  .panel { margin-top: 36px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  textarea { width: 100%; min-height: 150px; resize: vertical; border: 0; outline: 0; background: transparent; color: inherit;
+             font: 20px/1.5 var(--sans); padding: 4px; }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 2px; }
+  .examples button { font: 13px var(--ui); color: var(--muted); background: transparent; border: 1px solid var(--line);
+                     border-radius: 999px; padding: 5px 11px; cursor: pointer; }
+  .examples button:hover { color: var(--ink); border-color: var(--muted); }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
+  .voices { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .voices label { padding: 7px 14px; font-size: 14px; cursor: pointer; color: var(--muted); }
+  .voices input { position: absolute; opacity: 0; pointer-events: none; }
+  .voices input:checked + span { color: var(--ink); font-weight: 600; }
+  .voices label:has(input:checked) { background: var(--paper); }
+  .voices label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .speed { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .speed input { width: 130px; accent-color: var(--accent); }
+  .speed output { font: 13px var(--mono); color: var(--ink); min-width: 4ch; }
+  #speak { margin-left: auto; min-width: 6em; font: 600 16px var(--ui); color: var(--accent-ink); background: var(--accent); border: 0;
+           border-radius: 10px; padding: 11px 22px; cursor: pointer; }
+  #speak:disabled { opacity: 0.45; cursor: default; }
+  #speak:focus-visible, textarea:focus-visible, .examples button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .status { margin-top: 16px; font-size: 14px; color: var(--muted); min-height: 22px; }
+  .bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.15s; }
+  .bar[hidden] { display: none; }
+  .result[hidden] { display: none; }
+  .result { margin-top: 22px; }
+  audio { width: 100%; }
+  dl { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 0; }
+  dl div { border-top: 1px solid var(--line); padding-top: 8px; }
+  dt { font-size: 12px; color: var(--muted); }
+  dd { margin: 2px 0 0; font: 15px var(--mono); }
+  details { margin-top: 16px; font-size: 14px; color: var(--muted); }
+  details pre { white-space: pre-wrap; word-break: break-word; font: 13px/1.6 var(--mono); color: var(--ink); margin: 8px 0 0; }
+  .facts { margin-top: 44px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--line); }
+  .facts div { padding: 16px 12px 16px 0; border-bottom: 1px solid var(--line); }
+  .facts b { display: block; font: 600 22px var(--sans); }
+  .facts span { font-size: 13px; color: var(--muted); }
+  footer { margin-top: 36px; font-size: 14px; color: var(--muted); }
+  footer a { color: var(--ink); text-underline-offset: 3px; margin-right: 16px; }
+  footer p { margin: 14px 0 0; max-width: 62ch; }
+  @media (max-width: 560px) {
+    header h1 { font-size: 34px; } main { padding-top: 36px; }
+    dl { grid-template-columns: repeat(2, 1fr); } .facts { grid-template-columns: repeat(2, 1fr); }
+    #speak { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body><main><header><h1>Vivian</h1><p>tiny-voca 中英混读 · 本地语音合成</p></header>
+<section class="panel"><textarea id="text" aria-label="要合成的文本" maxlength="2000">这个 weekend 我想去 hiking，你来吗？</textarea>
+<div class="controls"><label class="speed">语速 <input type="range" id="speed" min="0.7" max="1.4" step="0.05" value="1"><output id="rate">1.00</output></label>
+<button id="speak">合成</button></div></section><p id="status" role="status"></p><audio controls id="audio" hidden></audio></main>
+<script>
+const el = id => document.getElementById(id);
+el('speed').oninput = () => el('rate').value = Number(el('speed').value).toFixed(2);
+el('speak').onclick = async () => {
+  el('speak').disabled = true;
+  el('status').textContent = '正在合成…';
+  try {
+    const response = await fetch('/synthesize', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:el('text').value,speed:el('speed').value})});
+    if (!response.ok) throw Error(await response.text());
+    const audio = el('audio');
+    if (audio.src) URL.revokeObjectURL(audio.src);
+    audio.src = URL.createObjectURL(await response.blob());
+    audio.hidden = false;
+    el('status').textContent = '合成完成。';
+    await audio.play().catch(() => {});
+  } catch (error) { el('status').textContent = error.message; }
+  finally { el('speak').disabled = false; }
+};
+</script></body></html>

@@ -1,0 +1,23 @@
+# Local training inputs and binary model artifacts
+/data/
+/models/
+/runs/
+/outputs/
+*.pt
+*.pth
+*.onnx
+*.zip
+*.tar
+# Only the three documented listening examples belong in version control
+*.wav
+!/docs/vivian-tts/assets/zh.wav
+!/docs/vivian-tts/assets/en.wav
+!/docs/vivian-tts/assets/mixed.wav
+
+.env
+.env.*
+.venv*/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store

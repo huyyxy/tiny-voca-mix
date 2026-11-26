@@ -21,3 +21,6 @@ __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
 .DS_Store
+
+# Public browser export of the Vivian checkpoint
+!/web/assets/vivian.onnx

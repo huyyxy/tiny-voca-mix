@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'web/**'
+      - 'src/tiny_voca/**'
+      - 'scripts/build_pages.py'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -21,9 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Prepare static files
-        run: |
-          mkdir -p _site
-          rsync -a --exclude='*.py' --exclude='__pycache__/' web/ _site/
+        run: python3 scripts/build_pages.py _site
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

@@ -71,26 +71,9 @@
   }
 </style>
 </head>
-<body><main><header><h1>Vivian</h1><p>tiny-voca 中英混读 · 本地语音合成</p></header>
+<body><main><header><h1>Vivian</h1><p>tiny-voca 中英混读 · <span id="mode">浏览器语音合成</span></p></header>
 <section class="panel"><textarea id="text" aria-label="要合成的文本" maxlength="2000">这个 weekend 我想去 hiking，你来吗？</textarea>
 <div class="controls"><label class="speed">语速 <input type="range" id="speed" min="0.7" max="1.4" step="0.05" value="1"><output id="rate">1.00</output></label>
-<button id="speak">合成</button></div></section><p id="status" role="status"></p><audio controls id="audio" hidden></audio></main>
-<script>
-const el = id => document.getElementById(id);
-el('speed').oninput = () => el('rate').value = Number(el('speed').value).toFixed(2);
-el('speak').onclick = async () => {
-  el('speak').disabled = true;
-  el('status').textContent = '正在合成…';
-  try {
-    const response = await fetch('/synthesize', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:el('text').value,speed:el('speed').value})});
-    if (!response.ok) throw Error(await response.text());
-    const audio = el('audio');
-    if (audio.src) URL.revokeObjectURL(audio.src);
-    audio.src = URL.createObjectURL(await response.blob());
-    audio.hidden = false;
-    el('status').textContent = '合成完成。';
-    await audio.play().catch(() => {});
-  } catch (error) { el('status').textContent = error.message; }
-  finally { el('speak').disabled = false; }
-};
-</script></body></html>
+<button id="speak">合成</button></div></section><p id="status" role="status">首次合成会下载模型和发音资源，完成后可离线使用。</p><audio controls id="audio" hidden></audio></main>
+<script src="app.js"></script>
+</body></html>

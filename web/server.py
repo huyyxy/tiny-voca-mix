@@ -18,6 +18,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
+        if self.path == "/app.js":
+            return self.reply(200, "application/javascript", PAGE.with_name("local.js").read_bytes())
         if self.path != "/":
             return self.send_error(404)
         self.reply(200, "text/html; charset=utf-8", PAGE.read_bytes())

@@ -2,6 +2,8 @@
 
 一个能在同一句话里切换普通话和英语的轻量 TTS 模型。输入「这个 weekend 我想去 hiking，你来吗？」，同一份权重会用 Vivian 的声音读完整句。模型从零训练了 **104,000 步**，包含 **4,575,499 个参数**，在 CPU 上输出 24 kHz 单声道语音。
 
+[查看 Vivian 训练数据清单](dataset/vivian-bilingual/)（26,910 条样本，含训练、验证和测试划分）
+
 ## 浏览器合成
 
 首次点击「合成」会将 Vivian ONNX 模型和中英文发音资源缓存到当前浏览器。看到「合成完成」后，可断网重新打开同一网址，输入新句子。清除网站数据后需重新下载。所有文本和生成的音频都留在设备上。[打开 Vivian](https://huyyxy.github.io/tiny-voca-mix/) · [下载 ONNX 权重](https://huyyxy.github.io/tiny-voca-mix/assets/vivian.onnx)

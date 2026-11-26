@@ -263,7 +263,98 @@ def split_pinyin(syllable):
     return initial, final, tone
 
 
-def apply_sandhi(syllables):
+# One capturing group locates the character whose lexical reading changes.
+# Keep homographs local: 大都市/大都会, 地方政府 and 东西方向 carry other readings.
+_CONTEXT_READINGS = {
+    'chang2': r'(?:很|挺|稍|这么|那么|有点)(长)(?=的|一点|时间|$)',
+    'dou1': r'(?:大家|我们|他们|通常|一切|家长|事情|手上|全世界|每周|每天|每星期|什么|的是|其实是|就是|啊)(都)(?=会)',
+    'wei2': r'华(为)(?=的|是|有|包括|对|他|$)',
+    'jiao1': r'(教)(?=他们|他怎么|大家|我)',
+    'dei3': r'我们(得)(?=抓紧|提前|先把|赶紧|想个|找个|从长计议)',
+    'tiao2': r'(调)(?=成静音|理自我)',
+    'zhi1': r'这(只)(?=小狗)',
+    'zhong4': r'(种)(?=满了梧桐树)',
+    'shu3': r'(数)(?=了一遍人数|着路边的电线杆)',
+    'hang2': r'投(行)(?=啊|业界|的|$)',
+    'dai1': r'(待)(?=在他们|在$)',
+    'la4': r'手机(落)(?=在出租车)',
+    'za1': r'头发(扎)(?=起来)',
+    'tan2': r'(弹)(?=出来)',
+    'zheng4': r'(挣)(?=很多呀)',
+    'jia4': r'请这个(假)',
+    'hai2': r'男生(还)(?=是女生)',
+    'shao3': r'人很(少)(?=相当于)',
+    'kong4': r'(空)(?=两格)',
+    'fo2': r'很(佛)(?=了|就)',
+    'chong2': r'(重)(?=看的话)',
+    'dang1': r'了(当)(?=然)',
+    'fa5': r'头(发)(?=染|扎)',
+    'jiang4': r'打麻(将)',
+    'ren2': r'(任)(?=正非)',
+    'de5': r'(?:安静|耐心|飞快|仔细|慢慢|匆忙|认真|轻轻|反复|一声不响|出乎意料|安安静静|长长|具体|不断|全面|合理|不停|完全|强行)(地)(?!区|带(?!上)|段|表|面|形|貌|质|理|域|球|下|上|方|图|位|点|震|毯|板|价|址|基)',
+    'le5': r'(了)(?=然后|当然)',
+    'zhe5': r'(?<=戴)(着)(?=眼镜)',
+}
+_EXTRA_READINGS = [
+    ('dei3', r'^(得)(?=绕一下)'),
+    ('dei3', r'我(得)(?=去系里)'),
+    ('dei3', r'都(得)(?=学)'),
+    ('dei3', r'那(得)(?=好几百)'),
+    ('zhe5', r'(?<=玩)(着)(?=手机)'),
+    ('chang2', r'(长)(?=曝光|时间)'),
+    ('dou1', r'(?:在全国)(都)(?=这么)'),
+    ('dou1', r'^(都)(?=会有更|会是那|会运用)'),  # Chinese run following English
+    ('jiao1', r'普通话(教)(?=的)'),
+    ('jiao1', r'^(教)(?=的就等于说)'),
+    ('dai1', r'东部(待)(?=了)'),
+    ('de5', r'(?:跑|笑|吹|说|擦|下|考|红|办|骑|做|急|玩|学|吃|搞|病|穿|安静|考虑|严重|变|恶化|觉不觉|不觉)(得)(?!到|分|奖|益|失|主|胜|法|手|力|意|罪|逞|救)'),
+    ('de5', r'(?:项目|题目|超标)(的)(?=话|一些|$)'),
+    ('de5', r'说打(的)(?=位置)'),
+    ('fang5', r'(?:个|些|什么|的|某|多)地(方)(?!政府|财政|行政|自治|性法规)'),
+    ('xi5', r'(?:个|些|种|买|的|什么|吃)东(西)(?!方|南北|部|两|海岸|方向)'),
+]
+_NEUTRAL_WORDS = {
+    '衣服':'fu5', '朋友':'you5', '时候':'hou5', '清楚':'chu5', '舒服':'fu5',
+    '喜欢':'huan5', '眼睛':'jing5', '商量':'liang5', '休息':'xi5', '行李':'li5',
+    '消息':'xi5', '早上':'shang5', '明白':'bai5', '麻烦':'fan5',
+}
+_READING_RULES = [(re.compile(pattern), reading)
+                  for reading, pattern in [*_CONTEXT_READINGS.items(), *_EXTRA_READINGS]]
+_ORDINAL_ONE = re.compile(
+    r'第(一)(?![一二三四五六七八九零])|[十百千万零](一)(?=日|楼|号|月|点[零一二三四五六七八九十]+分)|'
+    r'(一)(?=月[零一二三四五六七八九十]+[日号])|月(一)(?=[日号])|'
+    r'(一)(?=号房间)|住在(一)(?=楼)|(?:会议安排在|这趟列车)(一)(?=点[零一二三四五六七八九十]+分)'
+)
+_DIGIT_SEQUENCE = re.compile(r'[零一二三四五六七八九]{7,}')
+
+
+def phrase_readings(phrase):
+    """Lexical spellings shared by the acoustic tokens and the alignment transcript."""
+    py = _pypinyin()
+    readings = py.lazy_pinyin(phrase, style=py.Style.TONE3, neutral_tone_with_five=True, errors=list)
+    for word, reading in _NEUTRAL_WORDS.items():
+        for match in re.finditer(word, phrase):
+            readings[match.end()-1] = reading
+    for pattern, reading in _READING_RULES:
+        for match in pattern.finditer(phrase):
+            readings[match.start(1)] = reading
+    # Use the inventory's nasal final for the syllabic nasal interjection.
+    for index, char in enumerate(phrase):
+        if char == '嗯' and readings[index][:-1] in ('n', 'ng'):
+            readings[index] = 'en' + readings[index][-1]
+    for index in fixed_one_positions(phrase):
+        readings[index] = "yi1"
+    return readings
+
+
+def fixed_one_positions(phrase):
+    positions = {match.start(match.lastindex) for match in _ORDINAL_ONE.finditer(phrase)}
+    for match in _DIGIT_SEQUENCE.finditer(phrase):
+        positions.update(i for i in range(*match.span()) if phrase[i] == '一')
+    return positions
+
+
+def apply_sandhi(syllables, fixed_ones=()):
     """Mandarin tone sandhi, applied left to right inside one phrase.
 
     * 不 (bu4) before a fourth tone -> second tone
@@ -278,7 +369,7 @@ def apply_sandhi(syllables):
         following = result[index + 1] if index + 1 < count else None
         if item.char == "不" and item.tone == 4 and following and following.tone == 4:
             result[index] = Syllable(item.initial, item.final, 2, item.char)
-        elif item.char == "一" and item.tone == 1:
+        elif item.char == "一" and item.tone == 1 and index not in fixed_ones:
             if following is None:
                 continue
             if following.tone == 4:
@@ -292,14 +383,12 @@ def apply_sandhi(syllables):
     return result
 
 
-def phrase_syllables(phrase):
+def phrase_syllables(phrase, readings=None):
     """Phonemize one run of text between punctuation marks."""
-    pypinyin = _pypinyin()
-    items = pypinyin.pinyin(phrase, style=pypinyin.Style.TONE3,
-                            neutral_tone_with_five=True, heteronym=False)
+    if readings is None:
+        readings = phrase_readings(phrase)
     syllables = []
-    for index, item in enumerate(items):
-        value = item[0]
+    for index, value in enumerate(readings):
         char = phrase[index] if index < len(phrase) else "?"
         if not _CJK.match(char) or not value or not value[-1].isdigit():
             syllables.append(None)
@@ -309,10 +398,8 @@ def phrase_syllables(phrase):
             syllables.append(None)
             continue
         initial, final, tone = parts
-        if phrase.startswith("数了一遍人数", index):
-            tone = 3  # shǔ (to count); the final 数 in 人数 keeps shù.
         syllables.append(Syllable(initial, final, tone, char))
-    return apply_sandhi(syllables)
+    return apply_sandhi(syllables, fixed_one_positions(phrase))
 
 
 # --------------------------------------------------------------------------

@@ -5,7 +5,7 @@ import unicodedata
 from functools import lru_cache
 from pathlib import Path
 import pypinyin
-from . import zh_text as zh, en_text as en
+from . import zh_text as zh, en_text as en, context_en
 
 LANGUAGE = "mixed"
 DEFAULT_SPEAKERS = ("Vivian",)
@@ -24,7 +24,7 @@ def frontend_identity():
 @lru_cache()
 def frontend_fingerprint():
     h = hashlib.sha256()
-    for module in (__file__, zh.__file__, en.__file__):
+    for module in (__file__, zh.__file__, en.__file__, context_en.__file__):
         h.update(Path(module).read_bytes())
     h.update((pypinyin.__version__ + en.espeak_version()).encode())
     return h.hexdigest()
@@ -44,21 +44,31 @@ def units(text):
         text = zh.normalize_text(re.sub(r"[-−](?=\d)", "负", text))
     else:
         text = re.sub(r"-?\d+(?:\.\d+)?",lambda m:num2words(m.group()),text)
-    tokens = re.findall(han+r"+|[A-Za-z]+(?:'[A-Za-z]+)*|[^\s]",text)
+    english_overrides = context_en.context_phones(text)
+    tokens = re.finditer(han+r"+|[A-Za-z]+(?:'[A-Za-z]+)*|[^\s]",text)
     out = [("",[(zh.BOS,0)])]
-    for part in tokens:
+    for token in tokens:
+        part = token.group()
         if re.fullmatch(han+"+",part):
-            syllables = zh.phrase_syllables(part)
-            roman = pypinyin.lazy_pinyin(part,style=pypinyin.Style.NORMAL)
-            if len(roman)!=len(syllables) or None in syllables:
+            readings = zh.phrase_readings(part)
+            syllables = zh.phrase_syllables(part, readings)
+            if len(readings) != len(part) or None in syllables:
                 raise ValueError(f"Unmapped Mandarin syllable in {part}")
-            for spelling,sy in zip(roman,syllables):
+            for i, (reading, sy) in enumerate(zip(readings, syllables)):
+                if (sy.char == '儿' and i and part[i-1:i+1] in ('会儿', '块儿', '那儿', '玩儿')
+                        and not part.startswith(('儿童', '儿科', '儿子', '儿女', '儿歌', '儿孙'), i)):
+                    # Rhotacization is a coda of the previous alignment unit.
+                    # Reuse the existing retroflex token, without an extra vowel.
+                    spelling, phones = out[-1]
+                    out[-1] = (spelling + 'r', phones + [('zh/r', 0)])
+                    continue
                 phones = ([sy.initial] if sy.initial else []) + [sy.final+str(sy.tone)]
-                out.append((spelling.replace("ü","u").replace("v","u"),[("zh/"+p,0) for p in phones]))
+                spelling = reading.rstrip('12345').replace('ü', 'u').replace('v', 'u')
+                out.append((spelling, [('zh/'+p, 0) for p in phones]))
         elif re.match("[A-Za-z]",part):
             if out[-1][0]:
                 out.append(("",[(zh.SP,0)]))
-            out.append((part.lower().replace("'",""), english(part)))
+            out.append((part.lower().replace("'",""), english_overrides.get(token.start()) or english(part)))
         elif part in zh.PUNCTUATION:
             out.append(("",[(part,0)]))
     if not any(word for word,_ in out):

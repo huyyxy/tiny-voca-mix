@@ -69,7 +69,7 @@ def build(site, downloads):
                 target.write_bytes(tar.extractfile("package/" + member).read())
 
     with ZipFile(assets / "frontend.zip", "w", ZIP_DEFLATED) as frontend:
-        for name in ("__init__", "config", "text", "zh_text", "en_text"):
+        for name in ("__init__", "config", "text", "zh_text", "en_text", "context_en"):
             relative = Path("tiny_voca") / (name + ".py")
             frontend.write(ROOT / "src" / relative, str(relative))
         for wheel, digest in WHEELS.items():

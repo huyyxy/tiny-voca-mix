@@ -61,6 +61,21 @@ python -m tiny_voca.local_infer \
 - Muhammed Nazeem 的 **tiny-voca** 提供了轻量语音合成模型和训练器。[项目仓库](https://github.com/n4ze3m/tiny-voca)
 - xiaoliukuailiu 的 **tiny-voca-zh** 将模型适配到普通话。Vivian 的双语前端和训练笔记本以该项目的 `7ec7434` 版本为基础。[项目仓库](https://github.com/xiaoliukuailiu/tiny-voca-zh) · [实验使用的版本](https://github.com/xiaoliukuailiu/tiny-voca-zh/tree/7ec7434bb052fcd6da8066e77f7d0e160586e095)
 
+```bibtex
+@software{nazeem2026tinyvoca,
+  author = {Nazeem, Muhammed},
+  title  = {tiny-voca: a 4.5M-parameter two-voice English text-to-speech model},
+  year   = {2026},
+  url    = {https://huggingface.co/n4ze3m/tiny-voca}
+}
+
+@software{tiny-voca-zh,
+  title  = {tiny-voca-zh: a 4.5M-parameter two-voice Mandarin text-to-speech model},
+  year   = {2026},
+  url    = {https://github.com/xiaoliukuailiu/tiny-voca-zh}
+}
+```
+
 ### 相关论文
 
 - Holy Lovenia 等，LREC 2022。实验选取 ASCEND 的中英混读对话转写，由 Vivian 逐句朗读，构成句内语言切换的训练样本。[ASCEND: A Spontaneous Chinese-English Dataset for Code-switching in Multi-turn Conversation](https://aclanthology.org/2022.lrec-1.788/)

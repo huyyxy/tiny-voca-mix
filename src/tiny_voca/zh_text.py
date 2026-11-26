@@ -309,6 +309,8 @@ def phrase_syllables(phrase):
             syllables.append(None)
             continue
         initial, final, tone = parts
+        if phrase.startswith("数了一遍人数", index):
+            tone = 3  # shǔ (to count); the final 数 in 人数 keeps shù.
         syllables.append(Syllable(initial, final, tone, char))
     return apply_sandhi(syllables)
 

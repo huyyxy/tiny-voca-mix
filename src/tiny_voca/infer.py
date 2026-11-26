@@ -6,7 +6,7 @@ import torch
 from .config import CHECKPOINT_FORMAT, Config
 from .model import TinyVoca, UtteranceTooLong
 from .text import (DEFAULT_SPEAKERS, FRONTEND_VARIABLE, FRONTENDS, LANGUAGE, NothingToPronounce,
-                   frontend_fingerprint, phonemize, set_frontend)
+                   frontend_fingerprint, frontend_identity, phonemize, set_frontend)
 
 # The loudest sample of the audio that ``speak_text`` and the command return.
 PEAK = 0.99
@@ -25,6 +25,15 @@ _TEXT_END = re.compile("[\\s" + chr(0xFEFF) + "]+$")
 _CLOSING = "\"'”’)]»"                               # these may stand after the last mark: She said "go!"
 
 
+def _compatible_frontend(saved):
+    # The released Vivian checkpoint predates the shǔ correction. All input IDs
+    # retain their meanings. Keep strict fingerprint checks for other releases.
+    if saved.get("fingerprint") == "fef4c251bdee11594ae6ebcaf7dfdb7deff96863d919ffce1f6001fac40c4718":
+        current = frontend_identity()
+        return all(saved.get(key) == value for key, value in current.items())
+    return saved["fingerprint"] == frontend_fingerprint()
+
+
 def load_model(path, device="cpu", check_frontend=True):
     """``check_frontend=False`` lets a checkpoint speak tokens of the other
     front end (same inventory, slightly different conventions): for listening
@@ -32,7 +41,7 @@ def load_model(path, device="cpu", check_frontend=True):
     state = torch.load(path, map_location="cpu", weights_only=True)
     if state.get("format_version") != CHECKPOINT_FORMAT:
         raise ValueError("unsupported checkpoint format: byte-token checkpoints (format 2-3) cannot be used with this code")
-    if check_frontend and state["frontend"]["fingerprint"] != frontend_fingerprint():
+    if check_frontend and not _compatible_frontend(state["frontend"]):
         raise ValueError("checkpoint was trained with a different phoneme inventory/front end")
     model = TinyVoca(Config.from_dict(state["config"]))
     model.load_state_dict(state["model"], strict=True)
@@ -41,11 +50,11 @@ def load_model(path, device="cpu", check_frontend=True):
 
 def match_frontend(path):
     """Select the front end the checkpoint was trained with."""
-    wanted = torch.load(path, map_location="cpu", weights_only=True)["frontend"]["fingerprint"]
+    wanted = torch.load(path, map_location="cpu", weights_only=True)["frontend"]
     for name in FRONTENDS:
         set_frontend(name)
         try:
-            if frontend_fingerprint() == wanted:
+            if _compatible_frontend(wanted):
                 return name
         except ImportError:
             continue

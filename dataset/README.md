@@ -1,0 +1,15 @@
+# 双语文本清单
+
+每行对应一句，供不同音色共用。共 31,799 条，其中中文 20,059 条、英文 8,750 条、中英混读 2,990 条。
+
+| 训练集 | 验证集 | 测试集 |
+| --- | --- | --- |
+| [29,820 条](train.jsonl) | [979 条](validation.jsonl) | [1,000 条](test.jsonl) |
+
+沿用原有 26,910 条的划分，新增 4,889 条英文按上游划分并入。男声与女声合成时均沿用同一句的 `id` 和 `split`。公开文件中的纯中文记录仅提供标识和划分，本地 Qwen 输入包含三种语言类别的完整正文。
+
+## 文本来源与使用条件
+
+- 中文样本来自 tiny-voca-zh。现有来源说明未明确中文句子的再分发许可，因此公开版仅提供元数据。[中文项目](https://github.com/xiaoliukuailiu/tiny-voca-zh)
+- 英文句子来自 Muhammed Nazeem 的 tiny-voca dataset，覆盖两个批次。每条记录的 `text_source` 保留上游句子 ID、来源与许可标记。[上游数据集](https://huggingface.co/datasets/n4ze3m/tiny-voca) · [上游许可与第三方署名](https://huggingface.co/datasets/n4ze3m/tiny-voca/blob/main/LICENSE.md)
+- 中英混读转写选自 Holy Lovenia 等人的 ASCEND，按 CC BY-SA 4.0 提供。本项目选取混读文本并加入 Vivian 样本信息；每条转写的原始划分与记录编号见 `text_source.records`。[ASCEND 数据版本](https://huggingface.co/datasets/CAiRE/ASCEND/tree/b65b9bb) · [论文](https://aclanthology.org/2022.lrec-1.788/) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)

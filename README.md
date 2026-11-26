@@ -2,9 +2,7 @@
 
 一个能在同一句话里切换普通话和英语的轻量 TTS 模型。输入「这个 weekend 我想去 hiking，你来吗？」，同一份权重会用 Vivian 的声音读完整句。模型从零训练了 **104,000 步**，包含 **4,575,499 个参数**，在 CPU 上输出 24 kHz 单声道语音。
 
-[查看 Vivian 训练数据清单](dataset/vivian-bilingual/)（26,910 条样本，含训练、验证和测试划分）
-
-[英文补充文本](dataset/tiny-voca-en/additional-sentences.jsonl)收录了 Vivian 原清单以外的 4,889 句英文。与原有 3,861 句合计，覆盖 tiny-voca 两批数据中的全部 8,750 句英文。每行保留上游句子 ID、来源、许可标记和原始划分。[上游数据与署名：tiny-voca dataset, Muhammed Nazeem](https://huggingface.co/datasets/n4ze3m/tiny-voca) · [上游许可说明](https://huggingface.co/datasets/n4ze3m/tiny-voca/blob/main/LICENSE.md)
+[查看双语文本清单](dataset/)（31,799 条，含全部 8,750 句英文，按句子划分训练、验证和测试集）。
 
 ## 浏览器合成
 
@@ -63,7 +61,7 @@ python -m tiny_voca.local_infer \
 
 ## 用 Qwen3-TTS 重新配音
 
-在 Colab 打开[音色设计与批量合成笔记本](notebooks/Qwen3-TTS-VoiceDesign-Tiny-Voca-Mix.ipynb)，选择 GPU。输入是 `MyDrive/tiny-voca-mix-qwen3-tts/inputs/corpus.jsonl`，来自本地语料包中的 26,910 条中文、英文和混读文本。修改 `VOICE_DESCRIPTION` 可设计新音色，勾选 `PREVIEW_ONLY` 可先试听每类一句。`CONCURRENCY` 设置单 GPU 的批内并发数。参考音、模型和逐句 WAV 保存在同一 Drive 根目录，断线后用相同配置重新运行即可接续。
+在 Colab 打开[音色设计与批量合成笔记本](notebooks/Qwen3-TTS-VoiceDesign-Tiny-Voca-Mix.ipynb)，选择 GPU。输入是 `MyDrive/tiny-voca-mix-qwen3-tts/inputs/corpus.jsonl`，来自本地语料包中的 31,799 条中文、英文和混读文本。修改 `VOICE_DESCRIPTION` 可设计新音色，勾选 `PREVIEW_ONLY` 可先试听每类一句。`CONCURRENCY` 设置单 GPU 的批内并发数。参考音、模型和逐句 WAV 保存在同一 Drive 根目录，断线后用相同配置重新运行即可接续。
 
 ## 在 Colab 训练和续训
 

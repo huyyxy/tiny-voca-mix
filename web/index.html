@@ -45,9 +45,9 @@
   #speak:disabled { opacity: 0.45; cursor: default; }
   #speak:focus-visible, textarea:focus-visible, .examples button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .status { margin-top: 16px; font-size: 14px; color: var(--muted); min-height: 22px; }
-  .bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.15s; }
-  .bar[hidden] { display: none; }
+  #download { margin: -8px 0 18px; }
+  #download progress { display: block; width: 100%; height: 8px; accent-color: var(--accent); }
+  #download-amount { display: block; margin-top: 5px; color: var(--muted); font: 13px var(--mono); }
   .result[hidden] { display: none; }
   .result { margin-top: 22px; }
   audio { width: 100%; }
@@ -74,6 +74,11 @@
 <body><main><header><h1>Vivian</h1><p>tiny-voca 中英混读 · <span id="mode">浏览器语音合成</span></p></header>
 <section class="panel"><textarea id="text" aria-label="要合成的文本" maxlength="2000">这个 weekend 我想去 hiking，你来吗？</textarea>
 <div class="controls"><label class="speed">语速 <input type="range" id="speed" min="0.7" max="1.4" step="0.05" value="1"><output id="rate">1.00</output></label>
-<button id="speak">合成</button></div></section><p id="status" role="status">首次合成会下载模型和发音资源，完成后可离线使用。</p><audio controls id="audio" hidden></audio></main>
+<button id="speak">合成</button></div></section><p id="status" role="status">首次合成会下载模型和发音资源，完成后可离线使用。</p>
+<div id="download" hidden>
+  <progress id="download-bar" aria-label="模型和离线资源下载进度"></progress>
+  <span id="download-amount"></span>
+</div>
+<audio controls id="audio" hidden></audio></main>
 <script src="app.js"></script>
 </body></html>

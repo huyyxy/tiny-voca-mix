@@ -82,14 +82,14 @@ def build(site, downloads):
 
     template = (WEB / "sw.js").read_text()
     digest = hashlib.sha256(template.encode())
-    urls = []
+    sizes = {}
     for path in sorted(site.rglob("*")):
         if path.is_file():
             url = path.relative_to(site).as_posix()
-            urls.append(url)
+            sizes[url] = path.stat().st_size
             digest.update(url.encode() + hashlib.sha256(path.read_bytes()).digest())
     (site / "sw.js").write_text(template.replace("__VERSION__", digest.hexdigest()[:16])
-                                .replace("/* FILES */ []", json.dumps(urls)))
+                                .replace("/* FILE SIZES */ {}", json.dumps(sizes)))
 
 
 if __name__ == "__main__":

@@ -2,6 +2,9 @@ const el = id => document.getElementById(id);
 const status = el('status');
 const button = el('speak');
 const audio = el('audio');
+const download = el('download');
+const bar = el('download-bar');
+const amount = el('download-amount');
 let worker;
 
 el('speed').oninput = () => el('rate').value = Number(el('speed').value).toFixed(2);
@@ -10,23 +13,41 @@ async function prepareOffline() {
   if (!('serviceWorker' in navigator)) throw Error('请使用支持离线存储的浏览器，通过 HTTPS 打开此页面。');
   const sw = navigator.serviceWorker;
   if (sw.controller) return;
-  status.textContent = '正在下载并保存离线资源，首次使用可能需要一点时间…';
-  const registration = await sw.register('./sw.js');
-  if (sw.controller) return;
-  const installing = registration.installing || registration.waiting || registration.active;
-  if (!installing) throw Error('离线资源未安装，请联网后重试。');
-  await new Promise((resolve, reject) => {
-    function check() {
-      if (!sw.controller && installing.state !== 'redundant') return;
-      sw.removeEventListener('controllerchange', check);
-      installing.removeEventListener('statechange', check);
-      if (sw.controller) resolve();
-      else reject(Error('离线资源下载未完成，请检查网络和浏览器存储空间后重试。'));
-    }
-    sw.addEventListener('controllerchange', check);
-    installing.addEventListener('statechange', check);
-    check();
-  });
+  status.textContent = '正在下载 Vivian 模型和离线资源…';
+  download.hidden = false;
+  bar.removeAttribute('value');
+  amount.textContent = '正在连接…';
+  function updateProgress({source, data}) {
+    if (source?.scriptURL !== new URL('./sw.js', location.href).href ||
+        data?.type !== 'download-progress' || !data.total) return;
+    bar.max = data.total;
+    bar.value = Math.max(bar.value, Math.min(data.received, data.total));
+    const percent = Math.floor(100 * bar.value / bar.max);
+    amount.textContent = `${percent}% · ${(bar.value / 1e6).toFixed(1)} / ${(bar.max / 1e6).toFixed(1)} MB`;
+  }
+  sw.addEventListener('message', updateProgress);
+  try {
+    const registration = await sw.register('./sw.js');
+    if (sw.controller) return;
+    const installing = registration.installing || registration.waiting || registration.active;
+    if (!installing) throw Error('离线资源未安装，请联网后重试。');
+    installing.postMessage({type: 'get-download-progress'});
+    await new Promise((resolve, reject) => {
+      function check() {
+        if (!sw.controller && installing.state !== 'redundant') return;
+        sw.removeEventListener('controllerchange', check);
+        installing.removeEventListener('statechange', check);
+        if (sw.controller) resolve();
+        else reject(Error('离线资源下载未完成，请检查网络和浏览器存储空间后重试。'));
+      }
+      sw.addEventListener('controllerchange', check);
+      installing.addEventListener('statechange', check);
+      check();
+    });
+  } finally {
+    sw.removeEventListener('message', updateProgress);
+    download.hidden = true;
+  }
 }
 
 function showError(message) {

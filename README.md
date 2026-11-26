@@ -4,6 +4,8 @@
 
 [查看 Vivian 训练数据清单](dataset/vivian-bilingual/)（26,910 条样本，含训练、验证和测试划分）
 
+[英文补充文本](dataset/tiny-voca-en/additional-sentences.jsonl)收录了 Vivian 原清单以外的 4,889 句英文。与原有 3,861 句合计，覆盖 tiny-voca 两批数据中的全部 8,750 句英文。每行保留上游句子 ID、来源、许可标记和原始划分。[上游数据与署名：tiny-voca dataset, Muhammed Nazeem](https://huggingface.co/datasets/n4ze3m/tiny-voca) · [上游许可说明](https://huggingface.co/datasets/n4ze3m/tiny-voca/blob/main/LICENSE.md)
+
 ## 浏览器合成
 
 首次点击「合成」会将 Vivian ONNX 模型和中英文发音资源缓存到当前浏览器。看到「合成完成」后，可断网重新打开同一网址，输入新句子。清除网站数据后需重新下载。所有文本和生成的音频都留在设备上。[打开 Vivian](https://huyyxy.github.io/tiny-voca-mix/) · [下载 ONNX 权重](https://huyyxy.github.io/tiny-voca-mix/assets/vivian.onnx)

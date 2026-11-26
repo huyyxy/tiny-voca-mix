@@ -2,11 +2,31 @@
 
 一个能在同一句话里切换普通话和英语的轻量 TTS 模型。输入「这个 weekend 我想去 hiking，你来吗？」，同一份权重会用 Vivian 的声音读完整句。模型从零训练了 **104,000 步**，包含 **4,575,499 个参数**，在 CPU 上输出 24 kHz 单声道语音。
 
-| 试听 | 模型输入 | 时长 |
-| --- | --- | ---: |
-| [中英混读](docs/vivian-tts/assets/mixed.wav) | 这个 weekend 我想去 hiking，你来吗？ | 2.86 秒 |
-| [普通话](docs/vivian-tts/assets/zh.wav) | 今天最低气温是负十度。 | 2.12 秒 |
-| [英语](docs/vivian-tts/assets/en.wav) | Could you open the window, please? | 1.75 秒 |
+## 试听
+
+### 中英混读
+
+这个 weekend 我想去 hiking，你来吗？
+
+https://github.com/user-attachments/assets/9a5d824d-5d93-4ed8-b660-29bc89a49af6
+
+[下载原始 WAV](https://github.com/huyyxy/tiny-voca-mix/raw/refs/heads/main/docs/vivian-tts/assets/mixed.wav)
+
+### 普通话
+
+今天最低气温是负十度。
+
+https://github.com/user-attachments/assets/5ff86c0f-1831-462d-ac07-738818ac5867
+
+[下载原始 WAV](https://github.com/huyyxy/tiny-voca-mix/raw/refs/heads/main/docs/vivian-tts/assets/zh.wav)
+
+### 英语
+
+Could you open the window, please?
+
+https://github.com/user-attachments/assets/5603f9b1-9277-4638-abfa-4e69068334b3
+
+[下载原始 WAV](https://github.com/huyyxy/tiny-voca-mix/raw/refs/heads/main/docs/vivian-tts/assets/en.wav)
 
 ## 模型架构
 
@@ -16,7 +36,7 @@
 
 ## 在本地合成一句话
 
-本地归档已将 Vivian 推理权重放在 `models/vivian-104000/inference.pt`。Git 默认忽略此文件。从源码克隆运行时，请把自己的兼容 Vivian 检查点放到该位置，或通过 `--checkpoint` 指定路径。只想试听时，可以直接打开上表中的 WAV。
+本地归档已将 Vivian 推理权重放在 `models/vivian-104000/inference.pt`。Git 默认忽略此文件。从源码克隆运行时，请把自己的兼容 Vivian 检查点放到该位置，或通过 `--checkpoint` 指定路径。只想试听时，可以直接使用上方播放器或下载原始 WAV。
 
 以下命令在项目根目录执行。CPU 推理环境使用 Python 3.10，发音库由 `espeakng-loader` 提供。
 

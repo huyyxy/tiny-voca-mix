@@ -8,7 +8,7 @@ from tiny_voca.prepare import _prepare_row
 from tiny_voca.text import units, phonemize, frontend_fingerprint
 
 data, local, drive = map(Path,sys.argv[1:4])
-c=Config(speakers=("Vivian",))
+c=Config.from_dict(json.loads((data/"prepare-config.json").read_text()))
 local.mkdir(parents=True,exist_ok=True)
 key=hashlib.sha256()
 for name in ("train","validation","test"):
@@ -84,6 +84,9 @@ for split in ("train","validation","test"):
             for i,row in enumerate(rows[offset:offset+128],offset):
                 try:
                     ph=phonemize(row["text"])
+                    if (row["frontend"] != frontend_fingerprint() or list(ph.ids) != row["tokens"]
+                        or list(ph.stress) != row["stress"]):
+                        raise RuntimeError(f"Stored phonemes differ from the runtime frontend for {row['id']}")
                     if len(ph)>c.max_tokens: raise ValueError("Too many tokens")
                     record=_prepare_row(source,0,i,row,c,"text","voice_id",split,local/split)
                     wave=torch.load(local/record["path"],weights_only=True)["wave"]

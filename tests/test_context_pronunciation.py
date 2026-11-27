@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import patch
 
 from tiny_voca import context_en, text
 
@@ -41,5 +40,4 @@ class ContextPronunciationTest(unittest.TestCase):
         self.assertEqual(set(overrides), {2})
         self.assertEqual(overrides[2], [('en/l', 0), ('en/ɪ', 1), ('en/v', 0)])
         self.assertFalse(context_en.context_phones('I applied to graduate school'))
-        with patch.object(text, 'english', return_value=[('en/ə', 0)]):
-            self.assertIn(('read', ['en/ɹ', 'en/ɛ', 'en/d']), pronounced('we stayed inside and read.'))
+        self.assertIn(('read', ['en/ɹ', 'en/ɛ', 'en/d']), pronounced('we stayed inside and read.'))

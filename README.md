@@ -4,10 +4,6 @@
 
 [查看双语文本清单](dataset/)（31,799 条，含全部 8,750 句英文，按句子划分训练、验证和测试集）。
 
-## 浏览器合成
-
-首次点击「合成」会将 Vivian ONNX 模型和中英文发音资源缓存到当前浏览器。看到「合成完成」后，可断网重新打开同一网址，输入新句子。清除网站数据后需重新下载。所有文本和生成的音频都留在设备上。[打开 Vivian](https://huyyxy.github.io/tiny-voca-mix/) · [下载 ONNX 权重](https://huyyxy.github.io/tiny-voca-mix/assets/vivian.onnx)
-
 ## 试听
 
 ### 中英混读
@@ -42,9 +38,7 @@ https://github.com/user-attachments/assets/5603f9b1-9277-4638-abfa-4e69068334b3
 
 ## 在本地合成一句话
 
-本地归档已将 Vivian 推理权重放在 `models/vivian-104000/inference.pt`。Git 默认忽略此文件。从源码克隆运行时，请把自己的兼容 Vivian 检查点放到该位置，或通过 `--checkpoint` 指定路径。只想试听时，可以直接使用上方播放器或下载原始 WAV。
-
-以下命令在项目根目录执行。CPU 推理环境使用 Python 3.10，发音库由 `espeakng-loader` 提供。
+下面使用新版 Misaki 前端训练导出的双播音员检查点。将命令中的路径换成实际的 `inference.pt`。本地命令和浏览器界面共用同一个 Python 推理入口。
 
 ```bash
 python3.10 -m venv .venv
@@ -52,23 +46,27 @@ source .venv/bin/activate
 python -m pip install -r requirements-local.txt
 export PYTHONPATH="$PWD/src"
 
-python -m tiny_voca.local_infer \
-  --text '这个 weekend 我想去 hiking，你来吗？' \
-  --output outputs/mixed.wav
+python -m tiny_voca.local_infer --checkpoint /path/to/inference.pt \
+  --voice female --text '这个 weekend 我想去 hiking，你来吗？' --output outputs/mixed.wav
+python web/server.py --checkpoint /path/to/inference.pt
 ```
 
-需要交互试听时，在同一环境执行 `python web/server.py`，然后在浏览器中打开 `http://127.0.0.1:8766/`。模型运行在本机 Python 进程中。若端口已占用，可传入 `--port 8767`。
+本地界面默认地址为 `http://127.0.0.1:8766/`。
 
 ## 用 Qwen3-TTS 重新配音
 
-在 Colab 打开[音色设计与批量合成笔记本](notebooks/Qwen3-TTS-VoiceDesign-Tiny-Voca-Mix.ipynb)，选择 GPU。输入是 `MyDrive/tiny-voca-mix-qwen3-tts/inputs/corpus.jsonl`，来自本地语料包中的 31,799 条中文、英文和混读文本。修改 `VOICE_DESCRIPTION` 可设计新音色，勾选 `PREVIEW_ONLY` 可先试听每类一句。`CONCURRENCY` 设置单 GPU 的批内并发数。参考音、模型和逐句 WAV 保存在同一 Drive 根目录，断线后用相同配置重新运行即可接续。
+将本地输入包 `tiny-voca-mix-colab-31799.zip` 上传到 MyDrive 根目录，然后在 Colab 运行[男女播音员生成笔记本](notebooks/Qwen3-TTS-VoiceDesign-Tiny-Voca-Mix.ipynb)。笔记本从包内提取 31,799 条原文与 Misaki 标注，为男、女播音员各生成一段参考音，再依次合成全部原句。勾选 `PREVIEW_ONLY` 可先听两种音色的三类示例，保持音色配置可断线续跑。两份全量清单均完成后才更新 `MyDrive/tiny-voca-mix-qwen3-tts/announcers.json`。
+
+## 新训练使用的发音前端
+
+训练和新检查点推理共用 Misaki 0.9.4。普通话使用 Kokoro v1.1 的中文前端，英语使用美式词典、spaCy 词性标注及 eSpeak NG 回退。双语输出转换为 tiny-voca 的音素 ID 和重音序列。本地推理与 Colab 安装同一组[前端依赖](requirements-misaki.txt)。中文和英文均保留已核实的上下文纠音。[全量音素标注](dataset/phonemes/misaki.jsonl) · [新版前端读音核验](docs/misaki-reading-evaluation.md)
 
 ## 在 Colab 训练和续训
 
 ![Vivian 训练流程：将中文、英文和句内混读录音与文本对齐，提取特征并训练单音色模型](docs/vivian-tts/assets/training.png)
 
-1. 把配对语料包放到 `MyDrive/tiny-voca-zh/downloads/vivian-bilingual.zip`。本地归档中的文件是 `data/vivian-bilingual.zip`。自备数据时按实验记录中的目录和字段组织，并沿用单音色配置。[数据格式与划分](docs/experiment.md) · [配置](config/prepare-config.json)
-2. 在 Colab 上传训练笔记本，选择 GPU。首次运行可在首个代码单元设置 `SMOKE = True`，按顺序执行，分别从三类语料抽样，跑 80 步并试听。笔记本自带训练源码，会安装 Python 3.11、Torch/TorchAudio 2.8.0 和 eSpeak NG。[训练笔记本](notebooks/Vivian-Bilingual-Tiny-Voca.ipynb)
+1. 完成上述 Qwen3-TTS 生成步骤后，31,799 句对应 63,598 段录音。训练入口直接读取两份 Drive 合成结果，按原句 ID 关联新版标注。同一句的男女录音共享划分，对齐前分别有 59,640、1,958 和 2,000 段训练、验证、测试录音。
+2. 在 Colab 选择 GPU 并运行[双播音员训练笔记本](notebooks/Announcers-Bilingual-Tiny-Voca.ipynb)。首次可将 `SMOKE = True`，从两种音色和三类语料各抽少量样本，训练 80 步并试听。笔记本自带训练源码，使用 Python 3.11、Torch/TorchAudio 2.8.0 和 Misaki。
 3. 将 `SMOKE` 改为 `False` 后重新按顺序执行，目标为 104,000 步。预处理每 128 条向 Drive 保存一个分块。训练每 500 步保存 `last.pt`，每 10,000 步额外保留快照。相同数据、前端和训练配置下，重新连接后按顺序执行即可恢复。末尾单元用 `inference.pt` 合成三种输入。
 
 ## 代码与实验记录

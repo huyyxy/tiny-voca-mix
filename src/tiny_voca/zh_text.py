@@ -1,44 +1,7 @@
-"""Mandarin front end: Chinese text -> initial / final tokens carrying tone.
-
-This mirrors ``en_text`` so the rest of the system (annotation, training,
-inference) does not need to know which language it is running. Select it with
-``TINY_VOCA_LANG=zh``.
-
-Design decisions that differ from English, and why:
-
-* **Tone lives inside the token.** A final is written ``<final><tone>``, for
-  example ``a1``, ``ong2``, ``i4``, ``er5`` (5 = neutral). English keeps stress
-  as a parallel feature because it is prosodic; Mandarin tone is lexical, it is
-  given by the text and must reach the encoder as part of the symbol. It also
-  means one token = one phone = one alignment label, which is what the
-  duration layer needs.
-* **No word-boundary token.** Mandarin is written without spaces. Punctuation
-  carries the pauses; the model sees syllable adjacency directly.
-* **Initials are separate tokens.** Consonants are short but acoustically
-  distinct, and splitting them off keeps the final inventory at 35 instead of
-  a few hundred whole syllables.
-* **Tone sandhi is applied to the text before tokenisation**, because the audio
-  we generate from that text already exhibits the sandhi: a third tone followed
-  by a third tone is spoken as second + third, so it must be annotated that way.
-
-Symbol inventory (append-only; changing it invalidates checkpoints):
-
-    specials (5) + punctuation (12) + initials (21) + finals x 5 tones (175)
-"""
-
+"""Mandarin phone inventory, text normalization and context readings for Misaki."""
 from dataclasses import dataclass
-import hashlib
-import json
 import re
 import unicodedata
-
-FRONTEND_VERSION = 1
-LANGUAGE = "zh"
-DEFAULT_SPEAKERS = ("ZH_F1", "ZH_M1")
-# Interface parity with en_text: infer.py reads these to decide which front end
-# a checkpoint wants and how the user selects one.
-FRONTENDS = ("pinyin",)
-FRONTEND_VARIABLE = "TINY_VOCA_LANG"
 
 PAD, BOS, EOS, SP, UNK = "<pad>", "<bos>", "<eos>", "<sp>", "<unk>"
 SPECIALS = (PAD, BOS, EOS, SP, UNK)
@@ -53,20 +16,7 @@ FINALS = ("a", "o", "e", "ai", "ei", "ao", "ou", "an", "en", "ang", "eng", "ong"
 TONES = (1, 2, 3, 4, 5)
 FINAL_TOKENS = tuple(final + str(tone) for final in FINALS for tone in TONES)
 PHONES = INITIALS + FINAL_TOKENS
-SYMBOLS = SPECIALS + PUNCTUATION + PHONES
-SYMBOL_TO_ID = {symbol: index for index, symbol in enumerate(SYMBOLS)}
-PHONE_SET = frozenset(PHONES)
-PHONE_IDS = frozenset(SYMBOL_TO_ID[p] for p in PHONES)
-
-# Finals are voiced by definition; the model uses this set to keep vowel frames
-# voiced when the pitch tracker drops creaky ones.
 VOWELS = FINAL_TOKENS
-VOWEL_SET = frozenset(VOWELS)
-# Unaspirated stops, aspirated stops, fricatives and affricates: the QC probe
-# in the annotation layer uses this to check pitch-tracker voicing flips.
-VOICELESS = frozenset(("b", "p", "d", "t", "g", "k", "f", "h",
-                       "j", "q", "x", "zh", "ch", "sh", "z", "c", "s"))
-VOICED_INITIALS = frozenset(("m", "n", "l", "r"))
 
 # pinyin is written without the umlaut after these initials: ju, que, xuan, yun
 _UMLAUT_INITIALS = frozenset(("j", "q", "x"))
@@ -95,9 +45,6 @@ _PUNCTUATION_FOLD = {
     "，": ",", "。": ".", "！": "!", "？": "?", "；": ";", "：": ":",
     "、": ",", "．": ".", "·": "—", "～": "—", "　": " ",
 }
-_PUNCTUATION_CHARS = frozenset(PUNCTUATION)
-_CJK = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
-_LATIN_RUN = re.compile(r"[A-Za-z]+")
 
 _DIGITS = "零一二三四五六七八九"
 _SMALL_UNITS = ("", "十", "百", "千")
@@ -118,49 +65,6 @@ class Phonemized:
     def __len__(self):
         return len(self.ids)
 
-
-@dataclass(frozen=True)
-class Syllable:
-    initial: str
-    final: str
-    tone: int
-    char: str
-
-
-def _pypinyin():
-    try:
-        import pypinyin
-    except ImportError as error:
-        raise RuntimeError('the Mandarin front end needs pypinyin: pip install pypinyin') from error
-    return pypinyin
-
-
-def frontend():
-    return "pinyin"
-
-
-def set_frontend(name):
-    """Kept for interface parity with the English front end; zh has one path."""
-    if name not in ("pinyin", "own", "espeak"):
-        raise ValueError(f"unknown front end {name!r}")
-
-
-def frontend_identity():
-    return {"frontend_version": FRONTEND_VERSION, "language": LANGUAGE,
-            "phonemizer": "pypinyin", "style": "TONE3", "symbols": list(SYMBOLS)}
-
-
-def frontend_runtime():
-    return {"pypinyin_version": _pypinyin().__version__}
-
-
-def frontend_fingerprint():
-    return hashlib.sha256(json.dumps(frontend_identity(), sort_keys=True, ensure_ascii=False).encode()).hexdigest()
-
-
-# --------------------------------------------------------------------------
-# text normalization
-# --------------------------------------------------------------------------
 
 def _int_to_chinese(value):
     """Read an integer the way Mandarin does, e.g. 2026 -> 两千零二十六."""
@@ -328,175 +232,8 @@ _ORDINAL_ONE = re.compile(
 _DIGIT_SEQUENCE = re.compile(r'[零一二三四五六七八九]{7,}')
 
 
-def phrase_readings(phrase):
-    """Lexical spellings shared by the acoustic tokens and the alignment transcript."""
-    py = _pypinyin()
-    readings = py.lazy_pinyin(phrase, style=py.Style.TONE3, neutral_tone_with_five=True, errors=list)
-    for word, reading in _NEUTRAL_WORDS.items():
-        for match in re.finditer(word, phrase):
-            readings[match.end()-1] = reading
-    for pattern, reading in _READING_RULES:
-        for match in pattern.finditer(phrase):
-            readings[match.start(1)] = reading
-    # Use the inventory's nasal final for the syllabic nasal interjection.
-    for index, char in enumerate(phrase):
-        if char == '嗯' and readings[index][:-1] in ('n', 'ng'):
-            readings[index] = 'en' + readings[index][-1]
-    for index in fixed_one_positions(phrase):
-        readings[index] = "yi1"
-    return readings
-
-
 def fixed_one_positions(phrase):
     positions = {match.start(match.lastindex) for match in _ORDINAL_ONE.finditer(phrase)}
     for match in _DIGIT_SEQUENCE.finditer(phrase):
         positions.update(i for i in range(*match.span()) if phrase[i] == '一')
     return positions
-
-
-def apply_sandhi(syllables, fixed_ones=()):
-    """Mandarin tone sandhi, applied left to right inside one phrase.
-
-    * 不 (bu4) before a fourth tone -> second tone
-    * 一 (yi1): before 4th -> 2nd; before 1st/2nd/3rd -> 4th; otherwise 1st
-    * third tone + third tone -> second + third (iterative, so 3-3-3 -> 2-2-3)
-    """
-    result = list(syllables)
-    count = len(result)
-    for index, item in enumerate(result):
-        if item is None:
-            continue
-        following = result[index + 1] if index + 1 < count else None
-        if item.char == "不" and item.tone == 4 and following and following.tone == 4:
-            result[index] = Syllable(item.initial, item.final, 2, item.char)
-        elif item.char == "一" and item.tone == 1 and index not in fixed_ones:
-            if following is None:
-                continue
-            if following.tone == 4:
-                result[index] = Syllable(item.initial, item.final, 2, item.char)
-            elif following.tone in (1, 2, 3):
-                result[index] = Syllable(item.initial, item.final, 4, item.char)
-    for index in range(count - 1):
-        first, second = result[index], result[index + 1]
-        if first and second and first.tone == 3 and second.tone == 3:
-            result[index] = Syllable(first.initial, first.final, 2, first.char)
-    return result
-
-
-def phrase_syllables(phrase, readings=None):
-    """Phonemize one run of text between punctuation marks."""
-    if readings is None:
-        readings = phrase_readings(phrase)
-    syllables = []
-    for index, value in enumerate(readings):
-        char = phrase[index] if index < len(phrase) else "?"
-        if not _CJK.match(char) or not value or not value[-1].isdigit():
-            syllables.append(None)
-            continue
-        parts = split_pinyin(value)
-        if parts is None:
-            syllables.append(None)
-            continue
-        initial, final, tone = parts
-        syllables.append(Syllable(initial, final, tone, char))
-    return apply_sandhi(syllables, fixed_one_positions(phrase))
-
-
-# --------------------------------------------------------------------------
-# tokenisation
-# --------------------------------------------------------------------------
-
-def tokenize_with_owners(pieces):
-    """Tokenise and say, for every token, which syllable it came from.
-
-    ``owners[i]`` is the index of the syllable behind ``symbols[i]``, or ``-1``
-    for punctuation and the boundary tokens. The aligner needs this: it learns
-    where each character lies in the audio and must hand exactly those frames to
-    that character's one or two tokens.
-    """
-    symbols, owners, unknown = [BOS], [-1], []
-    syllable = -1
-    for kind, value in pieces:
-        if kind == "punct":
-            if symbols[-1] != value:
-                symbols.append(value)
-                owners.append(-1)
-            continue
-        syllable += 1
-        if value.initial:
-            symbols.append(value.initial)
-            owners.append(syllable)
-        token = value.final + str(value.tone)
-        if token in SYMBOL_TO_ID:
-            symbols.append(token)
-        else:
-            unknown.append(token)
-            symbols.append(UNK)
-        owners.append(syllable)
-    symbols.append(EOS)
-    owners.append(-1)
-    if not any(symbol in PHONE_SET or symbol == UNK for symbol in symbols):
-        raise NothingToPronounce("the text has nothing to pronounce")
-    return Phonemized(tuple(symbols), tuple(SYMBOL_TO_ID[s] for s in symbols),
-                      tuple(0 for _ in symbols), tuple(unknown)), tuple(owners)
-
-
-def tokenize(pieces):
-    """Build the token sequence from ``(kind, value)`` pieces.
-
-    ``kind`` is ``"punct"`` (a mark) or ``"syllable"`` (a ``Syllable``).
-    Pure function: testable without audio and without pypinyin.
-    """
-    return tokenize_with_owners(pieces)[0]
-
-
-def pieces(text):
-    """Split normalized text into syllable and punctuation pieces."""
-    output = []
-    buffer = []
-
-    def flush():
-        if buffer:
-            phrase = "".join(buffer)
-            for syllable in phrase_syllables(phrase):
-                output.append(("syllable", syllable) if syllable else ("punct", ""))
-            buffer.clear()
-
-    for char in text:
-        if char in _PUNCTUATION_CHARS:
-            flush()
-            output.append(("punct", char))
-        elif _CJK.match(char):
-            buffer.append(char)
-        elif char.isspace():
-            flush()
-        elif _LATIN_RUN.match(char):
-            # Latin runs have no Mandarin reading here; they are reported, not guessed.
-            flush()
-            output.append(("punct", ""))
-        else:
-            continue
-    flush()
-    return [item for item in output if not (item[0] == "punct" and item[1] == "")]
-
-
-def phonemize_with_owners(text):
-    if not isinstance(text, str) or not text.strip():
-        raise ValueError("text must not be empty")
-    normalized = normalize_text(text)
-    if not normalized:
-        raise NothingToPronounce("the text has nothing to pronounce")
-    return tokenize_with_owners(pieces(normalized))
-
-
-def phonemize(text):
-    return phonemize_with_owners(text)[0]
-
-
-def syllables_of(text):
-    """The ``Syllable`` objects of ``text`` in order, matching token owners."""
-    return [value for kind, value in pieces(normalize_text(text)) if kind == "syllable"]
-
-
-def is_phone(token_ids):
-    return [int(i) in PHONE_IDS for i in token_ids]

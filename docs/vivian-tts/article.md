@@ -77,7 +77,7 @@ assert sum(durations) == acoustic_frames
 
 ## 在 Colab A100 上训练 Vivian
 
-打开配套的 Colab 笔记本，就能按顺序完成发音转换、录音对齐和模型训练。这三步需要的代码都已放在笔记本里。开始前，先准备好有权用于训练的录音，以及每段录音实际朗读的文字。[配套训练笔记本](../../notebooks/Vivian-Bilingual-Tiny-Voca.ipynb)
+打开配套的 Colab 笔记本，就能按顺序完成发音转换、录音对齐和模型训练。这三步需要的代码都已放在笔记本里。开始前，先准备好有权用于训练的录音，以及每段录音实际朗读的文字。[当前双播音员训练笔记本](../../notebooks/Announcers-Bilingual-Tiny-Voca.ipynb)
 
 1. **准备压缩包。** ZIP 顶层为 `vivian-bilingual/`，其中放 `audio/`、三份样本清单和配置文件 `prepare-config.json`。训练、验证和测试清单分别命名为 `train.jsonl`、`validation.jsonl` 和 `test.jsonl`。每行按前面的 JSON 示例写一条录音，再加上句子的查重标识 `text_id`：同一句文本在不同清单里应得到同一个标识，这样笔记本才能发现重复。配置写成 `{"speakers":["Vivian"]}`。把 ZIP 放到 `MyDrive/tiny-voca-zh/downloads/vivian-bilingual.zip`。
 2. **先试跑。** 在 Colab 的运行时设置中选择 A100 GPU，设 `SMOKE = True`，依次运行单元。笔记本安装 Python 3.11、配套的 Torch/TorchAudio 2.8.0 和 eSpeak NG，从三类语料各取 8 条训练、2 条验证和 2 条测试，跑 80 步。此时试听的用途是验证整条链路能输出 WAV。

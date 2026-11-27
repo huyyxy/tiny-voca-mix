@@ -11,6 +11,6 @@
 - 教师录音由 ElevenLabs 的 Vivian 音色与 `eleven_multilingual_v2` 生成。文中三段试听由训练得到的 104,000 步检查点生成。语料、音色、样音和模型权重的使用及分发条件需按各自来源与适用协议核对。代码许可仅用于相应代码。[ElevenLabs 使用政策](https://elevenlabs.io/use-policy)
 
 
-## 浏览器推理
+## 发音前端
 
-网页通过 ONNX Runtime Web 1.20.1 运行 Vivian，由 Pyodide 0.26.4 执行本项目的双语文本前端。拼音与数字读法使用 pypinyin 0.55.0 和 num2words 0.5.14。英文音素来自 Spellophone 0.2.1 打包的 eSpeak NG。构建时从各软件的原版发行包提取所需文件。[ONNX Runtime](https://github.com/microsoft/onnxruntime) · [Pyodide](https://github.com/pyodide/pyodide/tree/0.26.4) · [pypinyin](https://pypi.org/project/pypinyin/0.55.0/) · [num2words](https://pypi.org/project/num2words/0.5.14/) · [Spellophone 发行包与源码](https://www.npmjs.com/package/@spelling-creator/spellophone/v/0.2.1)
+训练及本地推理使用 Misaki 的普通话与美式英语前端。普通话使用 jieba 和 pypinyin，英语使用 spaCy 模型和 eSpeak NG 回退。[Misaki](https://github.com/hexgrad/misaki) · [spaCy](https://spacy.io/) · [eSpeak NG](https://github.com/espeak-ng/espeak-ng)

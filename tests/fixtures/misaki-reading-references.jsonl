@@ -1,0 +1,120 @@
+{"id": "zh-0a7f0d74c2f2e23440d5acac", "language": "zh", "unit": 3, "target": "事", "expected": ["shi4"]}
+{"id": "zh-d2d9f8f906edde4a6ca9156b", "language": "zh", "unit": 11, "target": "些", "expected": ["xie1"]}
+{"id": "zh-a4c93c80ab9ca0d1c98a61da", "language": "zh", "unit": 15, "target": "然", "expected": ["ran2"]}
+{"id": "zh-c59d5aa009a3a0f42e5ca14e", "language": "zh", "unit": 10, "target": "就", "expected": ["jiu4"]}
+{"id": "zh-2c6c641eb878b73f66d1b47c", "language": "zh", "unit": 7, "target": "外", "expected": ["wai4"]}
+{"id": "zh-594527da727a60d5e665d165", "language": "zh", "unit": 11, "target": "子", "expected": ["zi5"]}
+{"id": "zh-b72bc2c264c940cf1bd82721", "language": "zh", "unit": 18, "target": "还", "expected": ["hai2"]}
+{"id": "zh-96ba422d9502208d496dd90d", "language": "zh", "unit": 7, "target": "了", "expected": ["le5"]}
+{"id": "zh-a7aeba0b41f6c3eedbd1e0f4", "language": "zh", "unit": 5, "target": "朱", "expected": ["zhu1"]}
+{"id": "zh-5f091edf6dc5a0c27336508c", "language": "zh", "unit": 9, "target": "门", "expected": ["men2"]}
+{"id": "zh-54350d28f43e7c77b3e3b015", "language": "zh", "unit": 6, "target": "告", "expected": ["gao4"]}
+{"id": "zh-f86e68dc3083fe9adf684f9f", "language": "zh", "unit": 10, "target": "把", "expected": ["ba3"]}
+{"id": "zh-c01909614c3c37635867fa39", "language": "zh", "unit": 2, "target": "老", "expected": ["lao3"]}
+{"id": "zh-b2fb7f9a6d770943b81b615f", "language": "zh", "unit": 14, "target": "还", "expected": ["hai2"]}
+{"id": "zh-fbd18e610fd09e068d27f2bf", "language": "zh", "unit": 6, "target": "市", "expected": ["shi4"]}
+{"id": "zh-193ab6930933cff1dde12612", "language": "zh", "unit": 1, "target": "个", "expected": ["ge4", "ge5"]}
+{"id": "zh-f18fd6aff0fdf6cbc93af2f2", "language": "zh", "unit": 1, "target": "天", "expected": ["tian1"]}
+{"id": "zh-b5fd0361fedffea3dc3c31bf", "language": "zh", "unit": 10, "target": "子", "expected": ["zi5"]}
+{"id": "zh-59018c8371287f3a4a81d33e", "language": "zh", "unit": 13, "target": "个", "expected": ["ge4", "ge5"]}
+{"id": "zh-33b011e1a274feeaf62bfc37", "language": "zh", "unit": 1, "target": "于", "expected": ["yu2"]}
+{"id": "zh-62bcbed55097b0b905687ef0", "language": "zh", "unit": 6, "target": "了", "expected": ["le5"]}
+{"id": "zh-1ce887febf1e545579b83520", "language": "zh", "unit": 2, "target": "的", "expected": ["de5"]}
+{"id": "zh-aa5f5e80c474828ffdc8efc4", "language": "zh", "unit": 4, "target": "在", "expected": ["zai4"]}
+{"id": "zh-02ae0ce52aecbed9f2cd62e8", "language": "zh", "unit": 9, "target": "斤", "expected": ["jin1"]}
+{"id": "zh-da489f23e99bb9af8a0f78bb", "language": "zh", "unit": 1, "target": "个", "expected": ["ge4", "ge5"]}
+{"id": "zh-33156b6922dcd131d37ad6f2", "language": "zh", "unit": 14, "target": "忙", "expected": ["mang2"]}
+{"id": "zh-7fa8738c354dac9d6aee01f3", "language": "zh", "unit": 7, "target": "站", "expected": ["zhan4"]}
+{"id": "zh-015c183ddddb32faa1322660", "language": "zh", "unit": 1, "target": "天", "expected": ["tian1"]}
+{"id": "zh-7e3bb79855f629446e7d55dd", "language": "zh", "unit": 13, "target": "旧", "expected": ["jiu4"]}
+{"id": "zh-05f16331734a21382654c31a", "language": "zh", "unit": 15, "target": "同", "expected": ["tong2"]}
+{"id": "zh-4ed4662e2ddc04fe123cd7d1", "language": "zh", "unit": 8, "target": "上", "expected": ["shang4", "shang5"]}
+{"id": "zh-0fcc11a1cd8fdb68a75b79c1", "language": "zh", "unit": 12, "target": "单", "expected": ["dan1"]}
+{"id": "zh-8c9d7ac2928297fd4cecce99", "language": "zh", "unit": 7, "target": "乎", "expected": ["hu1"]}
+{"id": "zh-54ba78d9c2a49fe60aa32411", "language": "zh", "unit": 3, "target": "双", "expected": ["shuang1"]}
+{"id": "zh-02aaa1426656cec8aec472be", "language": "zh", "unit": 15, "target": "看", "expected": ["kan4", "kan5"]}
+{"id": "zh-6832cc5caf3163a44a5ff52a", "language": "zh", "unit": 17, "target": "定", "expected": ["ding4"]}
+{"id": "zh-42b78dff28f26973338150af", "language": "zh", "unit": 22, "target": "下", "expected": ["xia4"]}
+{"id": "zh-4ce7a7c8fa54d3848c007843", "language": "zh", "unit": 1, "target": "晨", "expected": ["chen2"]}
+{"id": "zh-f41ea31095d60c4797dba35d", "language": "zh", "unit": 4, "target": "在", "expected": ["zai4"]}
+{"id": "zh-efd4a19a2f89768521360b2d", "language": "zh", "unit": 14, "target": "有", "expected": ["you3"]}
+{"id": "en-03686", "language": "en", "unit": 7, "target": "way", "expected": ["weɪ"]}
+{"id": "en-52635b55e624f1af", "language": "en", "unit": 2, "target": "squeezing", "expected": ["skwizɪŋ"]}
+{"id": "en-00494", "language": "en", "unit": 6, "target": "significant", "expected": ["sɪɡnɪfɪkənt", "səɡnɪfɪkənt"]}
+{"id": "en-00804", "language": "en", "unit": 1, "target": "recollected", "expected": ["ɹɛkəlɛktɪd", "ɹɛkəlɛktəd"]}
+{"id": "en-03289", "language": "en", "unit": 9, "target": "ugly", "expected": ["ʌɡli"]}
+{"id": "en-a384c5a3da7f89be", "language": "en", "unit": 5, "target": "back", "expected": ["bæk"]}
+{"id": "en-03341", "language": "en", "unit": 4, "target": "clips", "expected": ["klɪps"]}
+{"id": "en-cb80098ef8a54a6b", "language": "en", "unit": 3, "target": "lovers", "expected": ["lʌvɚz"]}
+{"id": "en-072781d52f153e19", "language": "en", "unit": 4, "target": "nor", "expected": ["nɔɹ", "nɚ"]}
+{"id": "en-02556", "language": "en", "unit": 2, "target": "shall", "expected": ["ʃæl", "ʃəl"]}
+{"id": "en-02109", "language": "en", "unit": 4, "target": "sink", "expected": ["sɪŋk"]}
+{"id": "en-5c278dc780051d24", "language": "en", "unit": 0, "target": "But", "expected": ["bʌt", "bət"]}
+{"id": "en-02819", "language": "en", "unit": 10, "target": "up", "expected": ["ʌp"]}
+{"id": "en-01556", "language": "en", "unit": 7, "target": "into", "expected": ["ɪntu", "ɪntə"]}
+{"id": "en-01055", "language": "en", "unit": 1, "target": "do", "expected": ["du", "də"]}
+{"id": "en-3481ddaf1cc5e44e", "language": "en", "unit": 16, "target": "facing", "expected": ["feɪsɪŋ"]}
+{"id": "en-abc0530c8fa39a85", "language": "en", "unit": 8, "target": "the", "expected": ["ðə"]}
+{"id": "en-00148", "language": "en", "unit": 6, "target": "his", "expected": ["hɪz", "ɪz"]}
+{"id": "en-00477", "language": "en", "unit": 6, "target": "find", "expected": ["faɪnd"]}
+{"id": "en-9fbbe1ba8f6e382e", "language": "en", "unit": 11, "target": "head", "expected": ["hɛd"]}
+{"id": "en-5779709f8e022766", "language": "en", "unit": 6, "target": "apparently", "expected": ["əpɛɹəntli", "əpæɹəntli"]}
+{"id": "en-02268", "language": "en", "unit": 0, "target": "Music", "expected": ["mjuzɪk"]}
+{"id": "en-82deb3dc8635e0e4", "language": "en", "unit": 5, "target": "nobody", "expected": ["noʊbədi"]}
+{"id": "en-00158", "language": "en", "unit": 1, "target": "would", "expected": ["wʊd", "wəd"]}
+{"id": "en-03381", "language": "en", "unit": 3, "target": "that", "expected": ["ðæt", "ðət"]}
+{"id": "en-02243", "language": "en", "unit": 8, "target": "Chautauqua", "expected": ["ʃətɔkwə", "tʃətɔkwə"]}
+{"id": "en-963043f226006479", "language": "en", "unit": 13, "target": "shall", "expected": ["ʃæl", "ʃəl"]}
+{"id": "en-bcd4a0786687970f", "language": "en", "unit": 11, "target": "it", "expected": ["ɪt"]}
+{"id": "en-fad142940ef6ea1e", "language": "en", "unit": 7, "target": "the", "expected": ["ðə"]}
+{"id": "en-02365", "language": "en", "unit": 0, "target": "What", "expected": ["wʌt", "wɑt"]}
+{"id": "en-01409", "language": "en", "unit": 8, "target": "with", "expected": ["wɪð", "wɪθ"]}
+{"id": "en-03524", "language": "en", "unit": 3, "target": "other", "expected": ["ʌðɚ"]}
+{"id": "en-3f08792085e34cae", "language": "en", "unit": 9, "target": "lost", "expected": ["lɔst", "lɑst"]}
+{"id": "en-02627", "language": "en", "unit": 5, "target": "sir", "expected": ["sɚ"]}
+{"id": "en-0030090eaecacef9", "language": "en", "unit": 11, "target": "rejoicing", "expected": ["ɹɪdʒɔɪsɪŋ", "ɹədʒɔɪsɪŋ"]}
+{"id": "en-8835c22f09f5aa03", "language": "en", "unit": 0, "target": "Sorry", "expected": ["sɑɹi", "sɔɹi"]}
+{"id": "en-a6465c0f56d52cdd", "language": "en", "unit": 11, "target": "through", "expected": ["θɹu"]}
+{"id": "en-02216", "language": "en", "unit": 1, "target": "might", "expected": ["maɪt"]}
+{"id": "en-00086", "language": "en", "unit": 2, "target": "is", "expected": ["ɪz", "əz"]}
+{"id": "en-66269086ba394093", "language": "en", "unit": 1, "target": "does", "expected": ["dʌz", "dəz"]}
+{"id": "mixed-93756b10f611fef618ab434c", "language": "mixed", "unit": 27, "target": "group", "expected": ["ɡɹup"]}
+{"id": "mixed-0c2a26df66d371148e54c8a3", "language": "mixed", "unit": 11, "target": "那", "expected": ["na4", "nei4"]}
+{"id": "mixed-22e79e3cba88ee6e467aa8e8", "language": "mixed", "unit": 4, "target": "hardware", "expected": ["hɑɹdwɛɹ"]}
+{"id": "mixed-08f1da2c01cff420bb98e69f", "language": "mixed", "unit": 1, "target": "后", "expected": ["hou4"]}
+{"id": "mixed-768632d752fe9df38f2538e3", "language": "mixed", "unit": 9, "target": "well", "expected": ["wɛl"]}
+{"id": "mixed-e6babc8a8efa6918e8d2cca4", "language": "mixed", "unit": 10, "target": "最", "expected": ["zui4"]}
+{"id": "mixed-c608bae7afeb09e84ad52e65", "language": "mixed", "unit": 19, "target": "take", "expected": ["teɪk"]}
+{"id": "mixed-f051ff788f3e8286933edd33", "language": "mixed", "unit": 1, "target": "嗯", "expected": ["en4", "en2", "en3", "en5", "ng4", "ng2", "ng3", "ng5"]}
+{"id": "mixed-72238465e380b7017ead5c39", "language": "mixed", "unit": 2, "target": "ipad", "expected": ["aɪpæd"]}
+{"id": "mixed-7cccdd73ee7532403c27ad3d", "language": "mixed", "unit": 13, "target": "呃", "expected": ["e4", "e2", "e5"]}
+{"id": "mixed-03c3c24fd83e6f7e99c9cda6", "language": "mixed", "unit": 2, "target": "get", "expected": ["ɡɛt", "ɡɪt"]}
+{"id": "mixed-d2970984e60f0f31fe710f31", "language": "mixed", "unit": 11, "target": "来", "expected": ["lai2"]}
+{"id": "mixed-0c36db724bcc9091fb606627", "language": "mixed", "unit": 8, "target": "project", "expected": ["pɹɑdʒɛkt"]}
+{"id": "mixed-c022cb987b5063aa3ad0b2dc", "language": "mixed", "unit": 24, "target": "键", "expected": ["jian4"]}
+{"id": "mixed-45d2d917106711f0d403aaac", "language": "mixed", "unit": 0, "target": "computer", "expected": ["kəmpjutɚ"]}
+{"id": "mixed-fd1391659f6b360f74978d14", "language": "mixed", "unit": 0, "target": "哦", "expected": ["o2", "o4", "o5"]}
+{"id": "mixed-2132fd7bde6a25617c54bdf9", "language": "mixed", "unit": 0, "target": "device", "expected": ["dɪvaɪs", "dəvaɪs"]}
+{"id": "mixed-4cb909d2ad8ed795e2b95fc7", "language": "mixed", "unit": 3, "target": "于", "expected": ["yu2"]}
+{"id": "mixed-615b2f20a5196c9f3df94e1c", "language": "mixed", "unit": 9, "target": "logo", "expected": ["loʊɡoʊ"]}
+{"id": "mixed-875147d502a1dbbb879c2d27", "language": "mixed", "unit": 7, "target": "始", "expected": ["shi3"]}
+{"id": "mixed-14651cc44e98766f3c61d74a", "language": "mixed", "unit": 8, "target": "task", "expected": ["tæsk"]}
+{"id": "mixed-160760fd4a992ece10c4e097", "language": "mixed", "unit": 2, "target": "以", "expected": ["yi3"]}
+{"id": "mixed-69a28abfdf120fe88bbcc03b", "language": "mixed", "unit": 14, "target": "accident", "expected": ["æksɪdənt", "æksədənt"]}
+{"id": "mixed-53a01682d12f2e33f7f32acd", "language": "mixed", "unit": 9, "target": "我", "expected": ["wo3"]}
+{"id": "mixed-3574a7ba667b245a85479764", "language": "mixed", "unit": 29, "target": "system", "expected": ["sɪstəm"]}
+{"id": "mixed-089cb76ddef2896d2b896911", "language": "mixed", "unit": 4, "target": "比", "expected": ["bi3"]}
+{"id": "mixed-ea58f1441f1c8777bbfb3771", "language": "mixed", "unit": 5, "target": "U", "expected": ["ju"]}
+{"id": "mixed-1da9099f6f8f42a1deae7833", "language": "mixed", "unit": 4, "target": "现", "expected": ["xian4"]}
+{"id": "mixed-31ddaa12cde0821260eef2e7", "language": "mixed", "unit": 6, "target": "self", "expected": ["sɛlf"]}
+{"id": "mixed-7367b0a23aba965fcbd6176e", "language": "mixed", "unit": 7, "target": "较", "expected": ["jiao4"]}
+{"id": "mixed-0427a5785278309d481d920c", "language": "mixed", "unit": 5, "target": "system", "expected": ["sɪstəm"]}
+{"id": "mixed-f97791f9297b9b55ee543509", "language": "mixed", "unit": 5, "target": "期", "expected": ["qi1"]}
+{"id": "mixed-ca64368026d8958180c81754", "language": "mixed", "unit": 17, "target": "Hong", "expected": ["hɔŋ", "hɑŋ"]}
+{"id": "mixed-74e14147ae3289cfb03c9205", "language": "mixed", "unit": 0, "target": "就", "expected": ["jiu4"]}
+{"id": "mixed-18f73ecf19e2aa20a5901086", "language": "mixed", "unit": 19, "target": "students", "expected": ["studənts", "stjudənts"]}
+{"id": "mixed-cb307858431e8e15e817d9f8", "language": "mixed", "unit": 6, "target": "是", "expected": ["shi4"]}
+{"id": "mixed-2f3cff521da9d2d3c6189887", "language": "mixed", "unit": 7, "target": "friends", "expected": ["fɹɛndz"]}
+{"id": "mixed-a3af599dc61919a77a7c5826", "language": "mixed", "unit": 14, "target": "你", "expected": ["ni3"]}
+{"id": "mixed-fea4cf3eb8f83b895ccda12d", "language": "mixed", "unit": 11, "target": "too", "expected": ["tu"]}
+{"id": "mixed-144f567c002c79176d436d8e", "language": "mixed", "unit": 9, "target": "做", "expected": ["zuo4"]}

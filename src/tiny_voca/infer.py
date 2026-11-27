@@ -1,12 +1,11 @@
 import argparse
-import os
 from pathlib import Path
 import re
 import torch
 from .config import CHECKPOINT_FORMAT, Config
 from .model import TinyVoca, UtteranceTooLong
-from .text import (DEFAULT_SPEAKERS, FRONTEND_VARIABLE, FRONTENDS, LANGUAGE, NothingToPronounce,
-                   frontend_fingerprint, frontend_identity, phonemize, set_frontend)
+from .text import (LANGUAGE, NothingToPronounce,
+                   frontend_fingerprint, frontend_identity, phonemize)
 
 # The loudest sample of the audio that ``speak_text`` and the command return.
 PEAK = 0.99
@@ -25,47 +24,21 @@ _TEXT_END = re.compile("[\\s" + chr(0xFEFF) + "]+$")
 _CLOSING = "\"'”’)]»"                               # these may stand after the last mark: She said "go!"
 
 
-def _compatible_frontend(saved):
-    # The released Vivian checkpoint predates the shǔ correction. All input IDs
-    # retain their meanings. Keep strict fingerprint checks for other releases.
-    if saved.get("fingerprint") == "fef4c251bdee11594ae6ebcaf7dfdb7deff96863d919ffce1f6001fac40c4718":
-        current = frontend_identity()
-        return all(saved.get(key) == value for key, value in current.items())
-    return saved["fingerprint"] == frontend_fingerprint()
-
-
-def load_model(path, device="cpu", check_frontend=True):
-    """``check_frontend=False`` lets a checkpoint speak tokens of the other
-    front end (same inventory, slightly different conventions): for listening
-    tests of the new phonemizer before the model is retrained on it."""
+def load_model(path, device="cpu"):
+    """Load a checkpoint trained with the active Misaki frontend and inventory."""
     state = torch.load(path, map_location="cpu", weights_only=True)
     if state.get("format_version") != CHECKPOINT_FORMAT:
         raise ValueError("unsupported checkpoint format: byte-token checkpoints (format 2-3) cannot be used with this code")
-    if check_frontend and not _compatible_frontend(state["frontend"]):
-        raise ValueError("checkpoint was trained with a different phoneme inventory/front end")
+    if state["frontend"] != {**frontend_identity(), "fingerprint": frontend_fingerprint()}:
+        raise ValueError("checkpoint requires a different frontend; expected the current Misaki fingerprint and inventory")
     model = TinyVoca(Config.from_dict(state["config"]))
     model.load_state_dict(state["model"], strict=True)
     return model.to(device).eval()
 
 
-def match_frontend(path):
-    """Select the front end the checkpoint was trained with."""
-    wanted = torch.load(path, map_location="cpu", weights_only=True)["frontend"]
-    for name in FRONTENDS:
-        set_frontend(name)
-        try:
-            if _compatible_frontend(wanted):
-                return name
-        except ImportError:
-            continue
-    set_frontend(FRONTENDS[0])
-    return None
-
-
 def sentences(text):
     """The sentences of ``text``, without a break after a title or an initial
-    or inside a number. The browser demo splits the same way
-    (``web/public/worker.js``); keep the two alike.
+    or inside a number.
 
     Mandarin has no spaces and no capital letters, so a sentence simply ends
     after ``。！？…`` and needs no look-ahead."""
@@ -87,8 +60,7 @@ def finished(text):
     """``text`` with a full stop added when it ends without a mark. Before a
     final mark the voice lengthens the last syllable and lets the sound fall;
     without one the audio breaks off. A face or another sign after the last
-    word is no mark ("see you :)"), a comma or a colon is one. The browser
-    demo does the same (``web/public/worker.js``); keep the two alike."""
+    word is no mark ("see you :)"), a comma or a colon is one."""
     body = _TEXT_END.sub("", text)
     if not body:
         return text
@@ -202,23 +174,17 @@ def main():
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--text", help="Text of any length; it is read sentence by sentence")
     source.add_argument("--text-file", type=Path, help="Read the text from a file (UTF-8)")
-    parser.add_argument("--voice", default=DEFAULT_SPEAKERS[0],
-                        help=f"one of the checkpoint's voices (default: {DEFAULT_SPEAKERS[0]})")
+    parser.add_argument("--voice", help="voice name (defaults to the first voice in the checkpoint)")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--speed", type=float, default=1)
     parser.add_argument("--pitch-shift", type=float, default=0, help="Added to log F0 (0.058 is about one semitone)")
     parser.add_argument("--pitch-range", type=float, default=1, help="Scale pitch movement around the utterance mean (1 = as predicted)")
     parser.add_argument("--device", default="cpu")
-    parser.add_argument("--frontend", choices=FRONTENDS, help="Phonemizer (default: TINY_VOCA_FRONTEND, else the one the checkpoint was trained with)")
-    parser.add_argument("--allow-frontend-mismatch", action="store_true",
-                        help="Speak although the checkpoint was trained on the other front end's tokens")
     args = parser.parse_args()
     import soundfile as sf
-    if args.frontend:
-        set_frontend(args.frontend)
-    elif FRONTEND_VARIABLE not in os.environ:
-        match_frontend(args.checkpoint)
-    model = load_model(args.checkpoint, args.device, check_frontend=not args.allow_frontend_mismatch)
+    model = load_model(args.checkpoint, args.device)
+    if args.voice is None:
+        args.voice = model.config.speakers[0]
     if args.voice not in model.config.speakers:
         parser.exit(2, f"unknown voice {args.voice!r}; this checkpoint has {list(model.config.speakers)}\n")
     text = args.text if args.text is not None else args.text_file.read_text(encoding="utf-8")

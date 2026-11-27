@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vivian · tiny-voca 中英语音合成</title>
+<title>tiny-voca 中英语音合成</title>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171512'/%3E%3Cpath d='M8 13v6M12 9v14M16 12v8M20 7v18M24 13v6' stroke='%23f4efe6' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
@@ -71,14 +71,10 @@
   }
 </style>
 </head>
-<body><main><header><h1>Vivian</h1><p>tiny-voca 中英混读 · <span id="mode">浏览器语音合成</span></p></header>
+<body><main><header><h1>tiny-voca-mix</h1><p>tiny-voca 中英混读 · <span id="mode">本机 Misaki 语音合成</span></p></header>
 <section class="panel"><textarea id="text" aria-label="要合成的文本" maxlength="2000">这个 weekend 我想去 hiking，你来吗？</textarea>
-<div class="controls"><label class="speed">语速 <input type="range" id="speed" min="0.7" max="1.4" step="0.05" value="1"><output id="rate">1.00</output></label>
-<button id="speak">合成</button></div></section><p id="status" role="status">首次合成会下载模型和发音资源，完成后可离线使用。</p>
-<div id="download" hidden>
-  <progress id="download-bar" aria-label="模型和离线资源下载进度"></progress>
-  <span id="download-amount"></span>
-</div>
+<div class="controls"><label>音色 <select id="voice"></select></label><label class="speed">语速 <input type="range" id="speed" min="0.7" max="1.4" step="0.05" value="1"><output id="rate">1.00</output></label>
+<button id="speak" disabled>合成</button></div></section><p id="status" role="status"></p>
 <audio controls id="audio" hidden></audio></main>
 <script src="app.js"></script>
 </body></html>

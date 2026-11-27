@@ -1,6 +1,3 @@
-# CPU inference environment used for the archived listening examples (Python 3.10).
+# CPU inference with a trained Misaki checkpoint (Python 3.10).
+-r requirements-misaki.txt
 torch==2.2.2
-numpy==1.26.4
-pypinyin==0.55.0
-num2words==0.5.14
-espeakng-loader==0.2.4

@@ -55,7 +55,7 @@ python web/server.py --checkpoint /path/to/inference.pt
 
 ## 用 Qwen3-TTS 重新配音
 
-将本地输入包 `tiny-voca-mix-colab-31799.zip` 上传到 MyDrive 根目录，然后在 Colab 运行[男女播音员生成笔记本](notebooks/Qwen3-TTS-VoiceDesign-Tiny-Voca-Mix.ipynb)。笔记本从包内提取 31,799 条原文与 Misaki 标注，为男、女播音员各生成一段参考音，再依次合成全部原句。勾选 `PREVIEW_ONLY` 可先听两种音色的三类示例，保持音色配置可断线续跑。两份全量清单均完成后才更新 `MyDrive/tiny-voca-mix-qwen3-tts/announcers.json`。
+将仓库中的 [Colab 输入包](data/tiny-voca-mix-colab-31799.zip) 上传到 MyDrive 根目录，然后在 Colab 运行[男女播音员生成笔记本](notebooks/Qwen3-TTS-VoiceDesign-Tiny-Voca-Mix.ipynb)。笔记本从包内提取 31,799 条原文与 Misaki 标注，为男、女播音员各生成一段参考音，再依次合成全部原句。勾选 `PREVIEW_ONLY` 可先听两种音色的三类示例，保持音色配置可断线续跑。两份全量清单均完成后才更新 `MyDrive/tiny-voca-mix-qwen3-tts/announcers.json`。
 
 ## 新训练使用的发音前端
 

@@ -6,7 +6,6 @@ on:
     paths:
       - 'web/pages/**'
       - 'web/sw.js'
-      - 'docs/vivian-tts/assets/*.wav'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -25,7 +24,7 @@ jobs:
       - name: Prepare static files
         run: |
           mkdir _site
-          cp web/pages/index.html web/sw.js docs/vivian-tts/assets/{mixed,zh,en}.wav _site/
+          cp web/pages/index.html web/sw.js _site/
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

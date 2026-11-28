@@ -77,7 +77,7 @@ def _worker_init(feature_dir, config, text_column, speaker_column, split):
                    speaker_column=speaker_column, split=split)
 
 
-def _prepare_row(source, source_index, index, row, c, text_column, speaker_column, split, feature_dir):
+def _prepare_row(source, source_index, index, row, c, text_column, speaker_column, split, feature_dir, *, return_wave=False):
     """Validate one row, extract its features and durably save the .pt file."""
     if not isinstance(row, dict):
         raise ValueError("row must be an object")
@@ -118,7 +118,7 @@ def _prepare_row(source, source_index, index, row, c, text_column, speaker_colum
         stream.flush()
         os.fsync(stream.fileno())
     os.replace(temporary, feature_dir/name)
-    return entry
+    return (entry, sample["wave"]) if return_wave else entry
 
 
 def _worker_prepare(task):

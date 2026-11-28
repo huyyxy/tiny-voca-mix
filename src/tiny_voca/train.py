@@ -299,6 +299,7 @@ def main():
     parser.add_argument("--max-seconds", type=float, default=3600, help="Wall-time cap per invocation; save and exit at a step boundary")
     parser.add_argument("--deadline-file", type=Path, help="Budget JSON with an absolute 'deadline'; training saves and exits before it")
     parser.add_argument("--deadline-margin", type=float, default=300)
+    parser.add_argument("--skip-complete", action="store_true", help="Exit successfully for a compatible completed checkpoint")
     parser.add_argument("--resume", type=Path, help="Continue the same run exactly (same recipe, data and configuration)")
     parser.add_argument("--init-from", type=Path, help="Start a NEW run from another run's checkpoint with a changed recipe: "
                         "weights, step counter and already-trained critics are taken over; the data order starts fresh")
@@ -380,6 +381,9 @@ def main():
         recipe["branched_from"] = state["recipe"].get("branched_from")
         if state["datasets"] != fingerprints or state["recipe"] != recipe:
             raise ValueError("resume recipe or dataset mismatch (use --init-from to branch a new run with a changed recipe)")
+        if args.skip_complete and state["step"] >= args.steps:
+            print(f"Checkpoint complete at step {state['step']}", flush=True)
+            return
         system.load_state_dict(state["system"])
         critics.load_state_dict(state["critics"])
         optimizer.load_state_dict(state["optimizer"])
@@ -429,9 +433,15 @@ def main():
     if step == args.gan_start and not args.resume:
         atomic_save(snapshot(), args.output / f"step-{step:08d}.pt")
     window, window_steps, window_start = defaultdict(float), 0, time.monotonic()
+    interval_start, interval_step = time.monotonic(), step
+    data_seconds = optimize_seconds = 0.0
     while step < args.steps:
+        fetch_start = time.monotonic()
         batch = collate([train[pool[i]] for i in sampler.next()], args.device)
+        update_start = time.monotonic()
+        data_seconds += update_start - fetch_start
         metrics = optimize_step(system, critics, optimizer, critic_optimizer, batch, step, recipe)
+        optimize_seconds += time.monotonic() - update_start
         step += 1
         for key, value in metrics.items():
             window[key] += value
@@ -450,12 +460,20 @@ def main():
                           audio_seconds_per_second=window["frames"] * c.hop / c.sample_rate / max(seconds, 1e-9),
                           learning_rate=optimizer.param_groups[0]["lr"])
             if save:
+                validation_start = time.monotonic()
                 record.update(validate(system, validation, validation_indices, args.device, recipe["weights"]))
+                save_start = time.monotonic()
                 state = snapshot()
                 atomic_save(state, args.output / "last.pt")
                 export_model(system.model, args.output / "inference.pt", step, train.annotation)
                 if retain:
                     atomic_save(state, args.output / f"step-{step:08d}.pt")
+                now = time.monotonic()
+                record.update(interval_steps=step - interval_step, interval_wall_seconds=now - interval_start,
+                              fetch_collate_seconds=data_seconds, optimize_wall_seconds=optimize_seconds,
+                              validation_seconds=save_start - validation_start, checkpoint_seconds=now - save_start)
+                data_seconds = optimize_seconds = 0.0
+                interval_start, interval_step = now, step
             with (args.output / "metrics.jsonl").open("a") as stream:
                 stream.write(json.dumps(record) + "\n")
             print(json.dumps(record), flush=True)

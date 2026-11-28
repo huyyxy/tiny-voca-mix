@@ -1,11 +1,11 @@
 """Align each recording using MMS words/syllables and cache small chunks on Drive."""
-import collections, hashlib, json, os, shutil, sys, tarfile
+import collections, hashlib, json, os, shutil, sys, tarfile, tempfile, time
 from pathlib import Path
 import torch, torchaudio
 from torchaudio.pipelines import MMS_FA
 from tiny_voca.config import Config
 from tiny_voca.prepare import _prepare_row
-from tiny_voca.text import units, phonemize, frontend_fingerprint
+from tiny_voca.text import units, frontend_fingerprint
 
 data, local, drive = map(Path,sys.argv[1:4])
 c=Config.from_dict(json.loads((data/"prepare-config.json").read_text()))
@@ -14,11 +14,14 @@ key=hashlib.sha256()
 for name in ("train","validation","test"):
     key.update((data/(name+".jsonl")).read_bytes())
 key.update((frontend_fingerprint()+c.fingerprint).encode())
-key.update(Path(__file__).read_bytes())
+# Bump when feature extraction or alignment semantics change.
+key.update(b"announcers-features-v1")
 tag=key.hexdigest()
 cache=drive/"preparation"/tag
 cache.mkdir(parents=True,exist_ok=True)
 model=None
+tokenizer = MMS_FA.get_tokenizer()
+aligner = MMS_FA.get_aligner()
 
 @torch.inference_mode()
 def durations(text,wave,frames):
@@ -29,11 +32,11 @@ def durations(text,wave,frames):
     words=[w for w,_ in groups if w]
     x=torchaudio.functional.resample(wave,24000,16000).unsqueeze(0).cuda()
     emission,_=model(x)
-    labels=MMS_FA.get_tokenizer()(words)
+    labels=tokenizer(words)
     flat=[v for group in labels for v in group]
     if not all(labels) or len(flat)+sum(a==b for a,b in zip(flat,flat[1:]))>emission.size(1):
         raise ValueError("CTC target exceeds emission length")
-    spans=iter(MMS_FA.get_aligner()(emission[0],labels))
+    spans=iter(aligner(emission[0],labels))
     scale=frames/emission.size(1)
     centers=[]
     voiced=[]
@@ -77,32 +80,52 @@ for split in ("train","validation","test"):
         label=f"{split}-{offset:05d}"
         archive=cache/(label+".tar")
         good=local/(label+".jsonl"); bad=local/(label+".rejected.jsonl")
-        if archive.exists():
-            with tarfile.open(archive) as t: t.extractall(local,filter="data")
+        started = time.monotonic()
+        marker = local/(label+".ready")
+        if marker.exists() and marker.read_text() == tag and good.is_file() and bad.is_file() and all(
+            (local/json.loads(line)["path"]).is_file() for line in good.read_text().splitlines()
+        ):
+            action = "local"
+        elif archive.exists():
+            action = "restore"
+            marker.unlink(missing_ok=True)
+            with tempfile.TemporaryDirectory(dir=local) as scratch:
+                packed = Path(scratch)/archive.name
+                shutil.copyfile(archive, packed)
+                with tarfile.open(packed) as t:
+                    t.extractall(local, filter="data")
         else:
+            action = "compute"
+            marker.unlink(missing_ok=True)
             batch=[]; failures=[]
             for i,row in enumerate(rows[offset:offset+128],offset):
                 try:
-                    ph=phonemize(row["text"])
-                    if (row["frontend"] != frontend_fingerprint() or list(ph.ids) != row["tokens"]
-                        or list(ph.stress) != row["stress"]):
-                        raise RuntimeError(f"Stored phonemes differ from the runtime frontend for {row['id']}")
-                    if len(ph)>c.max_tokens: raise ValueError("Too many tokens")
-                    record=_prepare_row(source,0,i,row,c,"text","voice_id",split,local/split)
-                    wave=torch.load(local/record["path"],weights_only=True)["wave"]
+                    tokens, stress = row["tokens"], row["stress"]
+                    if len(tokens)>c.max_tokens: raise ValueError("Too many tokens")
+                    record,wave=_prepare_row(source,0,i,row,c,"text","voice_id",split,local/split, return_wave=True)
                     d=durations(row["text"],wave,record["frames"])
-                    assert len(d)==len(ph) and sum(d)==record["frames"]
-                    record.update(tokens=ph.ids,stress=ph.stress,durations=d,language=row["language"],
-                                  frontend=frontend_fingerprint(),annotation=tag)
+                    assert len(d)==len(tokens) and sum(d)==record["frames"]
+                    record.update(tokens=tokens,stress=stress,durations=d,language=row["language"],
+                                  frontend=row["frontend"],annotation=tag)
                     batch.append(record)
                 except ValueError as exc:
                     failures.append(dict(id=row["id"],language=row["language"],reason=str(exc)))
             dump(good,batch); dump(bad,failures)
-            tmp=archive.with_suffix(".partial")
-            with tarfile.open(tmp,"w") as t:
-                for path in [good,bad,*[local/r["path"] for r in batch]]:
-                    t.add(path,arcname=path.relative_to(local))
-            os.replace(tmp,archive)
+            with tempfile.TemporaryDirectory(dir=local) as scratch:
+                packed = Path(scratch)/archive.name
+                with tarfile.open(packed,"w") as t:
+                    for path in [good,bad,*[local/r["path"] for r in batch]]:
+                        t.add(path,arcname=path.relative_to(local))
+                with tempfile.NamedTemporaryFile(dir=cache, suffix=".partial", delete=False) as upload:
+                    tmp = Path(upload.name)
+                try:
+                    shutil.copyfile(packed, tmp)
+                    os.replace(tmp, archive)
+                finally:
+                    tmp.unlink(missing_ok=True)
+        if action != "local":
+            marker.write_text(tag)
+        print(f"{label} {action} {time.monotonic()-started:.2f}s",flush=True)
         accepted.extend(map(json.loads,good.read_text().splitlines()))
         rejected.extend(map(json.loads,bad.read_text().splitlines()))
         print(split,offset+min(128,len(rows)-offset),"/",len(rows),"accepted",len(accepted),flush=True)
